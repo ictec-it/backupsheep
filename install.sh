@@ -24,7 +24,7 @@ if (( EUID == 0 )); then
     export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 fi
 
-readonly REPOSITORY_URL="https://github.com/bilal414/backupsheep.git"
+readonly REPOSITORY_URL="https://github.com/ictec-it/backupsheep.git"
 readonly APP_PORT="8000"
 readonly POSTGRES_STORAGE_GENERATION="18-alpine-icu-v1"
 readonly POSTGRES_STORAGE_LOGICAL_VOLUME="postgres_data_v1"
