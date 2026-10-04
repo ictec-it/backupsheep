@@ -326,7 +326,13 @@ def _assert_artifact_row_isolation(config: IdentityConfiguration) -> None:
                                 sql.Identifier(table)
                             )
                         )
-                        if cursor.fetchall() != [(fixtures[lane][key],)]:
+                        visible_ids = {row[0] for row in cursor.fetchall()}
+                        # Live installations hold real rows of this lane; prove
+                        # the fixture is visible and the foreign fixture is not.
+                        if (
+                            fixtures[lane][key] not in visible_ids
+                            or fixtures[foreign_lane][key] in visible_ids
+                        ):
                             raise LaneProbeError(
                                 f"{lane} artifact visibility crossed at {table}"
                             )
@@ -352,16 +358,23 @@ def _assert_artifact_row_isolation(config: IdentityConfiguration) -> None:
                 cursor.execute(
                     "SELECT id FROM public.core_backup_key_wrap ORDER BY id"
                 )
-                if cursor.fetchall() != [
-                    (fixtures["database"]["key_wrap"],),
-                    (fixtures["files"]["key_wrap"],),
-                ]:
+                storage_visible = {row[0] for row in cursor.fetchall()}
+                if not {
+                    fixtures["database"]["key_wrap"],
+                    fixtures["files"]["key_wrap"],
+                } <= storage_visible:
                     raise LaneProbeError("storage cannot reconcile both local key wraps")
                 _set_lane_role(cursor, config, "cloud")
                 cursor.execute(
                     "SELECT id FROM public.core_backup_execution ORDER BY id"
                 )
-                if cursor.fetchall():
+                cloud_visible = {row[0] for row in cursor.fetchall()}
+                # Cloud may hold its own provider-snapshot executions; it must not
+                # see the local database/files fixtures.
+                if cloud_visible & {
+                    fixtures["database"]["execution"],
+                    fixtures["files"]["execution"],
+                }:
                     raise LaneProbeError("cloud observed a local artifact execution")
                 _set_lane_role(cursor, config, None)
         finally:
