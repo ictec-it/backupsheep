@@ -1039,6 +1039,16 @@ def _assert_managed_ssh_row_isolation(config: IdentityConfiguration) -> None:
                 )
                 cursor.execute("SET CONSTRAINTS ALL IMMEDIATE")
                 cursor.execute("SET CONSTRAINTS ALL DEFERRED")
+                # Real installations already hold onboarded accounts when the
+                # installer is re-run (upgrade or configuration change). The
+                # single-account predicate is then expected to be false for the
+                # probe account; only a fresh installation must see it true.
+                cursor.execute(
+                    "SELECT count(*) FROM public.core_account WHERE id <> %s",
+                    (primary_actor[0],),
+                )
+                other_accounts = cursor.fetchone()[0]
+                expected_single = (other_accounts == 0,)
                 for lane in ("app", "database", "files"):
                     _set_lane_role(cursor, config, lane)
                     cursor.execute(
@@ -1047,9 +1057,9 @@ def _assert_managed_ssh_row_isolation(config: IdentityConfiguration) -> None:
                         ),
                         (primary_actor[0],),
                     )
-                    if cursor.fetchone() != (True,):
+                    if cursor.fetchone() != expected_single:
                         raise LaneProbeError(
-                            f"{lane} rejected the sole installation account"
+                            f"{lane} misjudged the installation account predicate"
                         )
                 _set_lane_role(cursor, config, None)
 

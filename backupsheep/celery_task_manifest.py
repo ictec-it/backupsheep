@@ -352,9 +352,23 @@ def task_policy(task_name: str) -> TaskPolicy:
 
 
 def celery_routes() -> dict[str, dict[str, str]]:
-    """Return a fresh Celery route mapping with no implicit/default entries."""
+    """Return a fresh Celery route mapping with no implicit/default entries.
 
-    return {name: {"queue": policy.queue} for name, policy in TASK_POLICIES.items()}
+    Every route pins the exchange and routing key explicitly. Celery converts a
+    route that only names a queue bound to a *direct* exchange into an anonymous
+    ``amq.default`` publication (``celery/app/amqp.py``, "convert to
+    anon-exchange"), which the hardened broker permissions deny and the signed
+    task envelope rejects as a route mismatch.
+    """
+
+    return {
+        name: {
+            "queue": policy.queue,
+            "exchange": f"backupsheep.{policy.queue}",
+            "routing_key": policy.queue,
+        }
+        for name, policy in TASK_POLICIES.items()
+    }
 
 
 def validate_configured_routes(routes: Mapping[str, object]) -> None:
