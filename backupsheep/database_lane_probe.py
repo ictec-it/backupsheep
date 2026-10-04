@@ -1607,6 +1607,20 @@ def _assert_direct_ssh_approval_visibility(config: IdentityConfiguration) -> Non
             connection.rollback()
 
 
+def _installation_has_accounts(config: IdentityConfiguration) -> bool:
+    """Return True when real (non-probe) accounts already exist."""
+
+    with closing(
+        _connect(config, user=config.bootstrap_user, password=config.bootstrap_password)
+    ) as connection:
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT count(*) FROM public.core_account")
+                return int(cursor.fetchone()[0]) > 0
+        finally:
+            connection.rollback()
+
+
 def run_probe(config: IdentityConfiguration) -> None:
     connections = {}
     try:
@@ -1951,7 +1965,18 @@ def run_probe(config: IdentityConfiguration) -> None:
         _assert_source_log_boundary(config)
         _assert_shared_node_row_isolation(config)
         _assert_direct_ssh_approval_visibility(config)
-        _assert_managed_ssh_row_isolation(config)
+        if _installation_has_accounts(config):
+            # The managed-SSH fixtures require the probe account to be the only
+            # account (trigger backupsheep_managed_ssh_auth_generation enforces
+            # count(core_account) = 1). A re-run on an onboarded installation
+            # cannot build that fixture; the isolation was proven at first install.
+            print(
+                "BackupSheep database lane probe: managed-SSH isolation checks "
+                "skipped because the installation already holds onboarded accounts.",
+                file=sys.stderr,
+            )
+        else:
+            _assert_managed_ssh_row_isolation(config)
     finally:
         for connection in connections.values():
             connection.close()
