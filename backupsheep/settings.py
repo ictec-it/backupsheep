@@ -739,26 +739,33 @@ def _sentry_sample_rate(name):
 SENTRY_TRACES_SAMPLE_RATE = _sentry_sample_rate("SENTRY_TRACES_SAMPLE_RATE")
 SENTRY_PROFILES_SAMPLE_RATE = _sentry_sample_rate("SENTRY_PROFILES_SAMPLE_RATE")
 
-sentry_sdk.init(
-    dsn=config["SENTRY_DSN"],
-    traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
-    profiles_sample_rate=SENTRY_PROFILES_SAMPLE_RATE,
-    include_local_variables=False,
-    # sentry-sdk's Python option equivalent to request_bodies="never".
-    max_request_body_size="never",
-    send_default_pii=False,
-    before_send=scrub_sentry_event,
-    before_send_transaction=scrub_sentry_event,
-    integrations=[
-        DjangoIntegration(
-            transaction_style="url",
-            middleware_spans=True,
-            signals_spans=False,
-            cache_spans=False,
-        ),
-    ],
-    environment=DJANGO_SERVER,
-)
+# Initialise Sentry only when a DSN is configured. With an empty DSN the SDK is
+# inert for reporting, but its default Celery integration still patches
+# ``apply_async`` and injects ``headers``/``baggage`` into every task message. On
+# Celery 5.6 the worker then exposes that nested ``headers`` dict as
+# ``request.headers``, hiding the ``backupsheep_auth`` envelope, and every task is
+# rejected as unauthenticated.
+if config["SENTRY_DSN"]:
+    sentry_sdk.init(
+        dsn=config["SENTRY_DSN"],
+        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
+        profiles_sample_rate=SENTRY_PROFILES_SAMPLE_RATE,
+        include_local_variables=False,
+        # sentry-sdk's Python option equivalent to request_bodies="never".
+        max_request_body_size="never",
+        send_default_pii=False,
+        before_send=scrub_sentry_event,
+        before_send_transaction=scrub_sentry_event,
+        integrations=[
+            DjangoIntegration(
+                transaction_style="url",
+                middleware_spans=True,
+                signals_spans=False,
+                cache_spans=False,
+            ),
+        ],
+        environment=DJANGO_SERVER,
+    )
 
 HOME_URL = "/console"
 LOGIN_URL = "/login"
