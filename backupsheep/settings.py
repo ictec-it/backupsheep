@@ -1053,7 +1053,12 @@ def _broker_ssl_options(broker_url, values):
 
 CELERY_BROKER_URL = _resolve_celery_broker_url(config)
 CELERY_BROKER_USE_SSL = _broker_ssl_options(CELERY_BROKER_URL, config)
-CELERY_RESULT_BACKEND = "django-db"
+# No lane holds grants on the django-db result tables (RESULT_TABLES in
+# database_lane_policy) and no application code reads task results, so the
+# backend stays disabled: mark_as_retry/mark_as_failure become no-ops instead of
+# raising "permission denied for table django_celery_results_taskresult" in the
+# worker pool callbacks of long-running provider tasks that poll via retry().
+CELERY_RESULT_BACKEND = None
 CELERY_CACHE_BACKEND = "django-cache"
 CELERY_TIMEZONE = TIME_ZONE
 # No production caller consumes Celery result rows, and chords have been removed.
