@@ -25,7 +25,7 @@ from backupsheep.source_recovery_policy import require_source_backup_creation
 
 @current_app.task(
     name="backup_basecamp",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     default_retry_delay=900,
     max_retries=4,

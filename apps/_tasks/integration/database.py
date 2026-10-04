@@ -20,7 +20,7 @@ from apps._tasks.helper.tasks import (
 
 @current_app.task(
     name="backup_database",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     default_retry_delay=900,
     max_retries=4,

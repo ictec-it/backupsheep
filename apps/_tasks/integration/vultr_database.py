@@ -144,7 +144,7 @@ def _backup_for_task(node, task_id, backup_type, attempt_no, schedule_id, notes)
 
 @current_app.task(
     name="backup_vultr_database",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     default_retry_delay=900,
     max_retries=4,
@@ -240,7 +240,7 @@ def poll_vultr_database_backup(self, backup_id):
 
 @current_app.task(
     name="restore_vultr_database",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     default_retry_delay=120,
     max_retries=10,

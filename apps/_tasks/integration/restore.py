@@ -627,7 +627,7 @@ def _cloud_restore_has_current_error_rollup(restore):
 
 @current_app.task(
     name="restore_cloud_backup",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     max_retries=0,
     soft_time_limit=(24 * 3600),
@@ -899,7 +899,7 @@ def poll_cloud_restore(self, node_id, restore_id, started_at=None, interval=120,
 
 @current_app.task(
     name="restore_website_backup",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     default_retry_delay=120,
     max_retries=96,
@@ -937,7 +937,7 @@ def restore_website_backup(self, node_id=None, backup_id=None, restore_id=None):
 
 @current_app.task(
     name="restore_database_backup",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     default_retry_delay=120,
     max_retries=96,

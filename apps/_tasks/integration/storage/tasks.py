@@ -1260,7 +1260,7 @@ def _publish_backup_finalizer_if_terminal(node, backup, stored_backup):
 
 @current_app.task(
     name="storage_upload",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     default_retry_delay=900,
     max_retries=96,
@@ -1448,7 +1448,7 @@ def storage_upload(self, node_id, backup_id, stored_backup_id):
 
 @current_app.task(
     name="storage_cleanup_owned_multipart",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     default_retry_delay=300,
     max_retries=24,
@@ -1509,7 +1509,7 @@ def storage_cleanup_owned_multipart(self, model_key, stored_backup_id):
 
 @current_app.task(
     name="storage_sweep_owned_multipart_cleanup",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     time_limit=900,
     soft_time_limit=840,
@@ -1604,7 +1604,7 @@ def _cleanup_source_ciphertext(model_key, backup_id, *, expected_lane):
 
 @current_app.task(
     name="cleanup_database_ciphertext_fence",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     default_retry_delay=300,
     max_retries=24,
@@ -1627,7 +1627,7 @@ def cleanup_database_ciphertext_fence(self, backup_id):
 
 @current_app.task(
     name="cleanup_files_ciphertext_fence",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     default_retry_delay=300,
     max_retries=24,
@@ -1658,7 +1658,7 @@ def _local_restore(model_key, restore_id):
 
 @current_app.task(
     name="stage_local_restore_ciphertext",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     default_retry_delay=300,
     max_retries=96,
@@ -1685,7 +1685,7 @@ def stage_local_restore_ciphertext(self, model_key, restore_id):
 
 @current_app.task(
     name="cleanup_local_restore_ciphertext",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     default_retry_delay=300,
     max_retries=24,
@@ -1707,7 +1707,7 @@ def cleanup_local_restore_ciphertext(self, model_key, restore_id):
 
 @current_app.task(
     name="finalize_backup",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     default_retry_delay=300,
     max_retries=8,

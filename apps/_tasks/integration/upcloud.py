@@ -1560,7 +1560,7 @@ def create_upcloud_snapshot(backup):
 
 @current_app.task(
     name="backup_upcloud",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     default_retry_delay=900,
     max_retries=4,

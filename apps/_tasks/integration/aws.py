@@ -18,7 +18,7 @@ from celery.exceptions import SoftTimeLimitExceeded
 
 @current_app.task(
     name="backup_aws",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     default_retry_delay=900,
     max_retries=4,

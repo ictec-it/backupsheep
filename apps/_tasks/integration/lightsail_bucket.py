@@ -2393,7 +2393,7 @@ def run_lightsail_bucket_replication(
 @current_app.task(
     name="replicate_lightsail_bucket",
     bind=True,
-    track_started=True,
+    ignore_result=True,
     acks_late=True,
     reject_on_worker_lost=True,
     max_retries=4,
@@ -2429,7 +2429,7 @@ def replicate_lightsail_bucket(
 @current_app.task(
     name="recover_stale_lightsail_bucket_leases",
     bind=True,
-    track_started=True,
+    ignore_result=True,
 )
 def recover_stale_lightsail_bucket_leases(self, replication_id: Optional[int] = None):
     return {
@@ -3253,7 +3253,7 @@ def run_lightsail_bucket_prefix_restore(
 @current_app.task(
     name="restore_lightsail_bucket_prefix",
     bind=True,
-    track_started=True,
+    ignore_result=True,
     acks_late=True,
     reject_on_worker_lost=True,
     max_retries=4,
@@ -3495,7 +3495,7 @@ def resume_lightsail_bucket_restores(self):
 @current_app.task(
     name="start_lightsail_bucket_replication",
     bind=True,
-    track_started=True,
+    ignore_result=True,
     acks_late=True,
     reject_on_worker_lost=True,
 )
@@ -3534,7 +3534,7 @@ def finalize_lightsail_bucket_replication(
 @current_app.task(
     name="restore_lightsail_bucket_replication",
     bind=True,
-    track_started=True,
+    ignore_result=True,
     acks_late=True,
     reject_on_worker_lost=True,
     max_retries=4,

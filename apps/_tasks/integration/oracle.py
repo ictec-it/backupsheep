@@ -2642,7 +2642,7 @@ def create_or_adopt_oracle_backup(node_or_integration, backup, *, client=None):
 
 @current_app.task(
     name="backup_oracle",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     default_retry_delay=900,
     max_retries=4,

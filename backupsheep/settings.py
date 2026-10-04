@@ -1059,7 +1059,10 @@ CELERY_TIMEZONE = TIME_ZONE
 # No production caller consumes Celery result rows, and chords have been removed.
 # Keeping results would give every worker a shared cross-lane data/tamper surface.
 CELERY_TASK_IGNORE_RESULT = True
-CELERY_TASK_TRACK_STARTED = True
+# The django-db result backend tables (RESULT_TABLES in database_lane_policy) are
+# excluded from every lane's grants, so no task may store STARTED/SUCCESS/FAILURE
+# rows there; backup state lives in the application's own tables.
+CELERY_TASK_TRACK_STARTED = False
 # Backup tasks perform remote side effects. A worker must acknowledge them only after
 # the task has committed its provider id/status, otherwise a worker crash can lose the
 # task while leaving an IN_PROGRESS row that nobody resumes. RabbitMQ redelivers late-

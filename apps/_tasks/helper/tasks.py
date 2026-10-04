@@ -1353,7 +1353,7 @@ def digitalocean_refresh_tokens(self):
 
 @current_app.task(
     name="delete_from_disk",
-    track_started=True,
+    ignore_result=True,
     bind=True,
     max_retries=3,
     default_retry_delay=60,
@@ -2492,7 +2492,7 @@ def _delete_requested_node(node_id, expected_lane):
 
 @current_app.task(
     name="delete_local_node_requested",
-    track_started=True,
+    ignore_result=True,
     default_retry_delay=1 * 60,
     max_retries=16,
     bind=True,
@@ -2507,7 +2507,7 @@ def delete_local_node_requested(self, node_id):
 
 @current_app.task(
     name="delete_cloud_node_requested",
-    track_started=True,
+    ignore_result=True,
     default_retry_delay=1 * 60,
     max_retries=16,
     bind=True,
