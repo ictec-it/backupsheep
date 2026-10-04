@@ -182,7 +182,11 @@ def _assert_replay_row_isolation(config: IdentityConfiguration) -> None:
                      ORDER BY target_lane
                     """
                 )
-                if cursor.fetchall() != [(own_lane, 1)]:
+                visible = cursor.fetchall()
+                # A live installation already holds completed deliveries for this
+                # lane; isolation means every visible row targets our own lane and
+                # the fixture row is among them, not that exactly one row exists.
+                if not visible or any(target != own_lane for target, _count in visible):
                     raise LaneProbeError(f"{lane} can observe another replay lane")
                 cursor.execute("RESET ROLE")
         connection.rollback()
