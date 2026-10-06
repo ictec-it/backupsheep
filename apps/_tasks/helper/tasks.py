@@ -1,4 +1,5 @@
 import datetime
+import logging
 import fcntl
 import json
 import math
@@ -16,6 +17,8 @@ from django.db import transaction
 from django.db.models import Q, Sum, Count
 from django.utils import timezone
 from sentry_sdk import capture_exception, capture_message
+
+logger = logging.getLogger(__name__)
 
 from apps.console.account.models import CoreAccount
 from apps.console.connection.models import CoreAuthBasecamp
@@ -157,7 +160,11 @@ def resume_pending_backup_requests(self):
         except CoreBackupRequest.DoesNotExist:
             continue
         except Exception as error:
-            # One malformed/deleted row cannot stop recovery of the rest.
+            # One malformed/deleted row cannot stop recovery of the rest, but
+            # the failure must be visible in the worker log: Sentry is optional.
+            logger.exception(
+                "Outbox sweep could not publish backup request %s", request_id
+            )
             capture_exception(error)
 
 

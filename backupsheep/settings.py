@@ -1059,6 +1059,11 @@ CELERY_BROKER_USE_SSL = _broker_ssl_options(CELERY_BROKER_URL, config)
 # raising "permission denied for table django_celery_results_taskresult" in the
 # worker pool callbacks of long-running provider tasks that poll via retry().
 CELERY_RESULT_BACKEND = None
+# With no result backend the built-in ``celery.backend_cleanup`` entry must not
+# be installed by Beat: it is routed to the default exchange, which every lane
+# user is denied, and the resulting SchedulingError left Beat hung after the
+# 04:00 UTC tick (no further periodic task was ever sent).
+CELERY_RESULT_EXPIRES = None
 CELERY_CACHE_BACKEND = "django-cache"
 CELERY_TIMEZONE = TIME_ZONE
 # No production caller consumes Celery result rows, and chords have been removed.

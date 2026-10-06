@@ -338,8 +338,12 @@ def publish_backup_request(request_id, *, force=False):
     token = uuid.uuid4()
 
     with transaction.atomic():
+        # Lock only the outbox row: ``FOR UPDATE`` on the joined node/connection/
+        # account tables would require UPDATE grants the recovery lanes (cloud,
+        # beat) do not hold, which made the outbox sweep fail silently with
+        # "permission denied for table core_connection".
         request = (
-            CoreBackupRequest.objects.select_for_update()
+            CoreBackupRequest.objects.select_for_update(of=("self",))
             .select_related(
                 "node__connection__account",
                 "node__connection__integration",
